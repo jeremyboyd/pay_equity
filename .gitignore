@@ -6,3 +6,5 @@
 *.feather
 *.csv
 renv
+analysis.R
+scratch detect and repair pay gaps.R
