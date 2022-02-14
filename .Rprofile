@@ -1,3 +1,4 @@
+source("renv/activate.R")
 # Author: Jeremy Boyd (jeremyboyd@pm.me)
 # Description: .Rprofile for pay_equity project.
 
