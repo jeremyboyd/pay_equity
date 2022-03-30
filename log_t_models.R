@@ -1,6 +1,11 @@
 # Author: Jeremy Boyd (jeremyboyd@pm.me)
 # Description: ACS wage models with log-t likelihood.
 
+
+# Want to do a more rigorous comparison of lognormal, logt, perhaps a mixture of one of those with a generalized extreme value distribution?
+
+
+
 library(broom.mixed)        # Tidy output for mixed effects models
 
 # Read in data
@@ -98,8 +103,6 @@ d <- pop_levelt$pred %>%
     pivot_wider(names_from = "gender", values_from = ".epred") %>%
     mutate(female_male = Female - Male)
 
-
-
 # Figure of wage distribution by gender
 fig_gender_dist_popt <- pop_levelt$pred %>%
     gen_plot(
@@ -116,6 +119,10 @@ fig_diff_dist_popt <- d %>%
 # Combined plot
 (fig_gender_dist_popt | fig_diff_dist_popt)
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#### Job-level pay distributions by gender ####
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 # Predictions in log space
 job_level_t <- msp(fit = fit_t,
                  new_data = expand_grid(
@@ -130,25 +137,30 @@ job_level_t <- msp(fit = fit_t,
 # Convert log-space predictions to dollars
 job_level_t$pred$.epred <- exp(job_level_t$pred$.epred)
 
+# Difference distributions
 job_diff_t <- job_level_t$pred %>%
     ungroup() %>%
     select(-.row) %>%
     pivot_wider(names_from = "gender", values_from = ".epred") %>%
     mutate(female_male = Female - Male)
 
+# Summarized difference distributions
 sum_t <- job_diff_t %>%
     select(job.cat, job, female_male) %>%
     group_by(job.cat, job) %>%
     median_hdi() %>%
     arrange(desc(abs(female_male)))
 
-# Number of jobs to fix is 187, so lower than normal model. Range of median adjustments is %5-29K, versus $6-57K. So there's a big practical difference between the normal and t-distributed models. In the t model there are fewer credible differences and smaller adjustments being recommended. We also seem to be getting better representation of mean wages based on pp checks.
+# Number of jobs to fix is 187, so lower than normal model. Range of median
+# adjustments is %5-29K, versus $6-57K. So there's a big practical difference
+# between the normal and t-distributed models. In the t model there are fewer
+# credible differences and smaller adjustments being recommended. We also seem
+# to be getting better representation of mean wages based on pp checks.
 sum_t %>%
     filter((.lower < 0 & .upper < 0 | .lower > 0 & .upper > 0)) %>%
     arrange(desc(abs(female_male)))
 
-
-
+# Top ten jobs to fix
 top <- sum_t %>%
     filter((.lower < 0 & .upper < 0 | .lower > 0 & .upper > 0)) %>%
     arrange(desc(abs(female_male))) %>%
@@ -182,14 +194,4 @@ fig_diff_dist_job_t <- job_diff_t %>%
         title = "T Gender-based wage differences by job",
         subtitle = "Black dots represent medians. Thin and thick black bars are the 95% and 80% credible intervals, respectively.")
 
-
 # For t-model, think I need to run a repair-measure loop and look at how it affects empirical wages.
-
-
-
-
-
-
-# Save model
-# saveRDS(fit, "fit varying effects of gender by job category and job.RDS")
-
