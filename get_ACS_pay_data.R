@@ -7,6 +7,34 @@ library(tidycensus)
 library(tidyverse)
 library(feather)
 
+vars <- pums_variables %>%
+    filter(year == 2019, survey == "acs1")
+
+vars %>% filter(level == "person") %>%
+    filter(str_detect(var_label, "[rR]ace")) %>%
+    View()
+
+# For SEX, 1 = male, 2 = female
+# WAGP is person-level wages or salary for the past 12 months
+# AGEP is person-level age
+# ESR is employment status recode; levels tell you whether someone is a civilian, military, unemployed, etc.
+# COW is class of worker; stuff like state/federal employee, private company employee, etc.
+# Person's weight: PWTGP
+# CIT is citizenship status. values 1-4 are all american citizens; 5 isn't.
+# There are yes/no variables for self-care, hearing, vision difficulty, independent living, ambulatory, cognitive
+# ability to speak english (ENG) on a 1-4 scale with 1 = very well
+# marital status (MAR)
+# educational attainment: SCHL
+# For WAGP, wages or salary income in past 12 months, something about using ADJINC to adjust SSIP to constant dollars
+# WKHP is usual hours worked in past twelve months
+# WKWN is weeks worked in past twelve months
+# WKL is worked last, looking for option 1, which is worked within past twelve months
+# INDP is industry worked in. How many levels does this have?
+# PAOC: presence and age of own children. Not getting how this is coded, what it's getting at
+# Seem to be a series of yes/no race variables. Like RACWHT
+
+
+
 # Get dataset with recode values. This makes it easy to translate numeric
 # category labels into nominal labels.
 df <- get_pums(
